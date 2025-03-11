@@ -1,0 +1,42 @@
+# Ignorar archivos de compilaci�n y dependencias
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.cache
+*.swp
+*.swo
+
+# Ignorar archivos de configuraci�n local
+appsettings.Development.json
+appsettings.Local.json
+
+# Ignorar archivos de NuGet
+.nuget/
+*.nupkg
+packages/
+
+# Ignorar archivos de salida
+out/
+publish/
+
+# Ignorar archivos de logs
+*.log
+logs/
+
+# Ignorar archivos de IDE
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos de entorno
+.env
+.env.local
+
+Properties/PublishProfiles/ejercicio250220 - FTP.pubxml
+Properties/PublishProfiles/ejercicio250220 - ReadOnly - FTP.pubxml
+Properties/PublishProfiles/ejercicio250220 - Web Deploy.pubxml
+Properties/PublishProfiles/ejercicio250220 - Zip Deploy.pubxml
+appsettings.json

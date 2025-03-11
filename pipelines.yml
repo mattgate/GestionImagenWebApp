@@ -1,0 +1,88 @@
+trigger:
+- master 
+
+pool: mypool
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  displayName: 'Build Solution'
+  jobs:
+  - job: Build
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Instalar .NET SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
+
+    - task: NuGetToolInstaller@1
+      displayName: 'Instalar NuGet'
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+
+    - task: VSBuild@1
+      displayName: 'Compilar solución'
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:PackageLocation=$(Build.ArtifactStagingDirectory)\GestionImagenWebApp.zip /p:OutDir=$(Build.ArtifactStagingDirectory)\PubTmp\Out'
+        platform: 'Any CPU'
+        configuration: '$(buildConfiguration)'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publicar artefactos'
+      inputs:
+        artifactName: 'webapp'
+
+- stage: Deploy
+  displayName: 'Deploy to Azure'
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Descargar artefactos de la compilación'
+      inputs:
+        artifactName: 'webapp'
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+    - powershell: |
+        $zipFilePath = "$(Build.ArtifactStagingDirectory)/webapp/GestionImagenWebApp.zip"
+        $tempDir = "$(Build.ArtifactStagingDirectory)/temp"
+        Expand-Archive -Path $zipFilePath -DestinationPath $tempDir -Force
+
+        # Mover los archivos de la carpeta anidada a la raíz
+        $nestedFolder = Get-ChildItem -Path $tempDir -Recurse -Directory | Where-Object { $_.Name -eq "Out" }
+        if ($nestedFolder) {
+            Write-Host "Ajustando la estructura del archivo .zip..."
+            Move-Item -Path "$($nestedFolder.FullName)\*" -Destination $tempDir
+            Remove-Item -Path $nestedFolder.FullName -Recurse -Force
+        }
+
+        Compress-Archive -Path "$tempDir/*" -DestinationPath $zipFilePath -Force
+      displayName: 'Ajustar estructura del archivo .zip'
+
+    - powershell: |
+        $kuduUrl = "https://ejercicio250220-abfqgpfdahe0b2bg.scm.eastus-01.azurewebsites.net/api/zipdeploy"
+        $zipFilePath = "$(Build.ArtifactStagingDirectory)/webapp/GestionImagenWebApp.zip"
+        $username = ''
+        $password = "$(PublishProfilePassword)"
+
+        $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username, $password)))
+        try {
+          Invoke-RestMethod -Uri $kuduUrl `
+                            -Method Post `
+                            -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} `
+                            -InFile $zipFilePath `
+                            -ContentType "multipart/form-data"
+          Write-Host "Despliegue exitoso."
+        } catch {
+            Write-Host "Error en el despliegue: $_"
+            exit 1
+        }
+      displayName: 'Desplegar con ZipDeploy'

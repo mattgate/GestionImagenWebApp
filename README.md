@@ -1,2 +1,4 @@
-# GestionImagenWebApp
-WebApp para gestion de imagenes en la nube junto con CICD
+# GestionImagenWebApp 
+
+Una aplicación web .net de gestión de imágenes y presentar una implementación de 
+integración y despliegue continuos con azure devops

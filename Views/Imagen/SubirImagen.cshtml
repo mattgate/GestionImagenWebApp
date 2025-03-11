@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Subir Imágenes";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<br />
+
+<form asp-action="Subir" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>Selecciona una imagen:</label>
+        <input type="file" name="archivo" class="form-control" accept="image/*" />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Subir Imagen</button>
+</form>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-info mt-3">
+        @ViewBag.Message
+    </div>
+}
+
+@if (ViewBag.URL != null)
+{
+    <div class="mt-3">
+        <strong>URL de la imagen:</strong>
+        <a href="@ViewBag.URL" target="_blank">@ViewBag.URL</a>
+    </div>
+}
+
+<div class="mt-4">
+    <a asp-controller="Imagen" asp-action="Index" class="btn btn-link btn-sm">
+        Volver al Menú
+    </a>
+</div>

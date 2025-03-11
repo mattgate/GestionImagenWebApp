@@ -1,0 +1,61 @@
+﻿@model List<GestionImagenWebApp.Controllers.ImagenController.ImagenInfo>
+
+@{
+    ViewData["Title"] = "Lista de imagenes";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Opciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var img in Model)
+        {
+            <tr>
+                <td>@img.Nombre</td>
+                <td>
+                    <a asp-controller="Imagen" asp-action="VerImagen" asp-route-url="@img.URL" target="_blank" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> Ver
+                    </a>
+                    <a href="@img.URL" download="@img.Nombre" class="btn btn-success btn-sm">
+                        Descargar
+                    </a>
+                    <button class="btn btn-danger btn-sm" onclick="eliminarImagen('@img.Nombre')">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<div class="mt-4">
+    <a asp-controller="Imagen" asp-action="Index" class="btn btn-link btn-sm">
+        Volver al Menú
+    </a>
+</div>
+
+<script>
+    function eliminarImagen(nombre) {
+        if (confirm("¿Seguro que deseas eliminar la imagen " + nombre + "?")) {
+            fetch('/Imagen/EliminarImagen?nombre=' + encodeURIComponent(nombre), {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Imagen eliminada correctamente.");
+                    location.reload();
+                } else {
+                    alert("Error al eliminar la imagen.");
+                }
+            })
+            .catch(error => alert("Error: " + error));
+        }
+    }
+</script>

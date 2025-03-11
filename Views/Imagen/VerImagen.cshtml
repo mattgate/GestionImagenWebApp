@@ -1,0 +1,16 @@
+﻿@{
+    var URL = ViewBag.ImagenUrl as string;
+}
+
+@if (!string.IsNullOrEmpty(URL))
+{
+    <div class="text-center">
+        <img src="@URL" class="img-fluid" />
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        No se pudo cargar el archivo.
+    </div>
+}
